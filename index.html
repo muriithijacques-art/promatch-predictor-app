@@ -131,16 +131,25 @@ const API = "https://promatch-predictor.onrender.com";
 
 let selectedMatch = null;
 
-function localDate(){
+function localDate(offset = 0){
  const d = new Date();
+ d.setDate(d.getDate() + offset);
+
  const year = d.getFullYear();
  const month = String(d.getMonth()+1).padStart(2,"0");
  const day = String(d.getDate()).padStart(2,"0");
+
  return `${year}-${month}-${day}`;
 }
 
-document.getElementById("today").textContent =
- "Fixtures for " + localDate();
+document.getElementById("fixtureDate").value = localDate();
+
+function changeDate(offset){
+ document.getElementById("fixtureDate").value =
+  localDate(offset);
+
+ loadFixtures();
+}
 
 async function loadFixtures(){
  const box = document.getElementById("fixtures");
@@ -150,9 +159,15 @@ async function loadFixtures(){
  message.textContent = "Loading fixtures...";
 
  try{
-  const response = await fetch(
-   `${API}/fixtures?date=${localDate()}`
-  );
+  const chosenDate =
+ document.getElementById("fixtureDate").value;
+
+document.getElementById("today").textContent =
+ "Fixtures for " + chosenDate;
+
+const response = await fetch(
+ `${API}/fixtures?date=${chosenDate}`
+);
 
   const data = await response.json();
 
