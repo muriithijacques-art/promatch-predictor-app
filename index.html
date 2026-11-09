@@ -139,7 +139,6 @@ async function loadFixtures(){
   const response = await fetch(
    `${API}/fixtures?date=${localDate()}`
   );
-  console.log("PREDICTION URL:", url);
 
   const data = await response.json();
 
