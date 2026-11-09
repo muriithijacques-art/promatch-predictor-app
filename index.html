@@ -82,7 +82,21 @@ footer{text-align:center;color:#8da0b8;padding:20px;font-size:12px}
  <section class="panel">
   <h2>Match Centre</h2>
   <p class="muted" id="today"></p>
-  <button onclick="loadFixtures()">Refresh Fixtures</button>
+
+<div>
+ <button onclick="changeDate(-1)">Yesterday</button>
+ <button onclick="changeDate(0)">Today</button>
+ <button onclick="changeDate(1)">Tomorrow</button>
+</div>
+
+<input
+ type="date"
+ id="fixtureDate"
+ onchange="loadFixtures()"
+ style="width:100%;padding:12px;margin:10px 0;"
+>
+
+<button onclick="loadFixtures()">Refresh Fixtures</button>
   <div id="message"></div>
   <div id="fixtures"></div>
  </section>
