@@ -231,10 +231,7 @@ async function getPrediction(){
  output.innerHTML = "<p>Analysing match. Please wait...</p>";
 
  try{
-  const d = new Date(selectedMatch.date);
-  const season = d.getUTCMonth() >= 7
-   ? d.getUTCFullYear()
-   : d.getUTCFullYear()-1;
+  const season = 2024;
 
   const url = `${API}/predict?league=${selectedMatch.league_id}`+
    `&season=${season}`+
