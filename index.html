@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#071426">
+<title>ProMatch Predictor</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#071426;
+ color:#fff;
+ font-family:Arial,sans-serif;
+}
+header{
+ padding:22px 16px;
+ background:#10233c;
+ border-bottom:2px solid #19c7a0;
+}
+header h1{margin:0;color:#19c7a0;font-size:24px}
+header p{color:#a9b8ca;margin:7px 0 0}
+main{padding:16px;max-width:750px;margin:auto}
+.panel{
+ background:#10233c;
+ padding:16px;
+ border-radius:13px;
+ margin-bottom:16px;
+}
+h2{font-size:18px;margin-top:0}
+button{
+ background:#19c7a0;
+ color:#071426;
+ border:0;
+ border-radius:8px;
+ padding:12px 16px;
+ font-weight:bold;
+ cursor:pointer;
+}
+button:disabled{opacity:.5}
+select{
+ width:100%;
+ padding:12px;
+ border-radius:8px;
+ background:#071426;
+ color:white;
+ border:1px solid #52647b;
+ margin:8px 0;
+}
+.match{
+ background:#172e49;
+ padding:14px;
+ border-radius:10px;
+ margin:12px 0;
+}
+.teams{font-size:16px;font-weight:bold}
+.muted{color:#a9b8ca;font-size:13px}
+.result{color:#19c7a0;font-weight:bold;margin-top:10px}
+.prob{
+ display:flex;
+ justify-content:space-between;
+ padding:9px 0;
+ border-bottom:1px solid #34465c;
+}
+#message{color:#ffc66d;margin:10px 0}
+.vip{border:1px solid #d8b45c}
+.vip h2{color:#eacb75}
+footer{text-align:center;color:#8da0b8;padding:20px;font-size:12px}
+</style>
+</head>
+
+<body>
+
+<header>
+ <h1>⚽ ProMatch Predictor</h1>
+ <p>Smart football match predictions</p>
+</header>
+
+<main>
+
+ <section class="panel">
+  <h2>Match Centre</h2>
+  <p class="muted" id="today"></p>
+  <button onclick="loadFixtures()">Refresh Fixtures</button>
+  <div id="message"></div>
+  <div id="fixtures"></div>
+ </section>
+
+ <section class="panel">
+  <h2>Match Prediction</h2>
+  <p class="muted">Select a match from today's fixtures to analyse it.</p>
+  <div id="selected">No match selected.</div>
+  <button id="predictButton" onclick="getPrediction()" disabled>
+   Predict Match
+  </button>
+  <div id="prediction"></div>
+ </section>
+
+ <section class="panel vip">
+  <h2>👑 VIP Membership</h2>
+  <p>Unlock premium football predictions.</p>
+  <p>Monthly: <b>$25</b></p>
+  <p>Yearly: <b>$200</b></p>
+  <p>Lifetime: <b>$1,000</b></p>
+  <p class="muted">Payment integration will be added later.</p>
+ </section>
+
+</main>
+
+<footer>
+ ProMatch Predictor | Prediction estimates are not guaranteed results.
+</footer>
+
+<script>
+const API = "https://promatch-predictor.onrender.com";
+
+let selectedMatch = null;
+
+function localDate(){
+ const d = new Date();
+ const year = d.getFullYear();
+ const month = String(d.getMonth()+1).padStart(2,"0");
+ const day = String(d.getDate()).padStart(2,"0");
+ return `${year}-${month}-${day}`;
+}
+
+document.getElementById("today").textContent =
+ "Fixtures for " + localDate();
+
+async function loadFixtures(){
+ const box = document.getElementById("fixtures");
+ const message = document.getElementById("message");
+
+ box.innerHTML = "";
+ message.textContent = "Loading fixtures...";
+
+ try{
+  const response = await fetch(
+   `${API}/fixtures?date=${localDate()}`
+  );
+
+  const data = await response.json();
+
+  if(!response.ok){
+   throw new Error(JSON.stringify(data.detail || data));
+  }
+
+  message.textContent =
+   data.count + " fixtures found.";
+
+  if(!data.matches || data.matches.length === 0){
+   box.innerHTML = "<p>No fixtures found for this date.</p>";
+   return;
+  }
+
+  data.matches.forEach(match=>{
+   const card = document.createElement("div");
+   card.className = "match";
+
+   const home = match.home_team || "Home";
+   const away = match.away_team || "Away";
+   const league = match.league || "Football";
+   const status = match.status || "";
+
+   card.innerHTML = `
+    <div class="muted">${league} | ${status}</div>
+    <div class="teams">${home} vs ${away}</div>
+    <div class="muted">${match.date || ""}</div>
+    <div class="muted">Score: ${
+      match.home_goals ?? "-"
+    } - ${
+      match.away_goals ?? "-"
+    }</div>
+    <br>
+    <button type="button">Analyse Match</button>
+   `;
+
+   card.querySelector("button").onclick = ()=>{
+    selectMatch(match);
+   };
+
+   box.appendChild(card);
+  });
+
+ }catch(error){
+  message.textContent =
+   "Could not load fixtures: " + error.message;
+ }
+}
+
+function selectMatch(match){
+ selectedMatch = match;
+
+ document.getElementById("selected").innerHTML =
+  `<b>${match.home_team} vs ${match.away_team}</b>
+   <p class="muted">${match.league}</p>`;
+
+ document.getElementById("predictButton").disabled =
+  !match.league_id ||
+  !match.home_team_id ||
+  !match.away_team_id;
+
+ document.getElementById("prediction").innerHTML = "";
+
+ if(!match.league_id){
+  document.getElementById("selected").innerHTML +=
+   "<p class='muted'>League ID unavailable for this match.</p>";
+ }
+}
+
+async function getPrediction(){
+ if(!selectedMatch) return;
+
+ const output = document.getElementById("prediction");
+ const button = document.getElementById("predictButton");
+
+ button.disabled = true;
+ output.innerHTML = "<p>Analysing match. Please wait...</p>";
+
+ try{
+  const d = new Date(selectedMatch.date);
+  const season = d.getUTCMonth() >= 7
+   ? d.getUTCFullYear()
+   : d.getUTCFullYear()-1;
+
+  const url = `${API}/predict?league=${selectedMatch.league_id}`+
+   `&season=${season}`+
+   `&home_team=${selectedMatch.home_team_id}`+
+   `&away_team=${selectedMatch.away_team_id}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if(!response.ok){
+   throw new Error(JSON.stringify(data.detail || data));
+  }
+
+  const p = data.prediction;
+  const odds = data.probabilities;
+
+  output.innerHTML = `
+   <div class="match">
+    <h2>Prediction Results</h2>
+    <div class="result">Predicted score: ${p.predicted_score}</div>
+    <p>Home expected goals: ${p.home_expected_goals}</p>
+    <p>Away expected goals: ${p.away_expected_goals}</p>
+    <p>Model confidence estimate: ${p.confidence}%</p>
+    <p class="muted">${p.simulations} simulations</p>
+    <h3>Match probabilities</h3>
+    ${probability("Home win",odds.home_win)}
+    ${probability("Draw",odds.draw)}
+    ${probability("Away win",odds.away_win)}
+    ${probability("Over 1.5",odds.over_1_5)}
+    ${probability("Over 2.5",odds.over_2_5)}
+    ${probability("Over 3.5",odds.over_3_5)}
+    ${probability("BTTS Yes",odds.btts_yes)}
+    ${probability("BTTS No",odds.btts_no)}
+    <h3>Top scorelines</h3>
+    ${data.top_scorelines.map(s=>
+      `<div class="prob"><span>${s.score}</span>
+       <b>${s.probability}%</b></div>`
+    ).join("")}
+   </div>
+  `;
+
+ }catch(error){
+  output.innerHTML =
+   `<p id="message">Prediction error: ${error.message}</p>`;
+ }finally{
+  button.disabled = false;
+ }
+}
+
+function probability(name,value){
+ return `<div class="prob">
+  <span>${name}</span><b>${value}%</b>
+ </div>`;
+}
+
+loadFixtures();
+</script>
+
+</body>
+</html>
