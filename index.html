@@ -385,11 +385,15 @@ const timeText = kickoffDate && !isNaN(kickoffDate)
     <span style="color:#19c7a0">${status}</span>
    </div>
 
-   <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin:20px 0">
-    <b>${home}</b>
-    <span style="color:#a9b8ca">VS</span>
-    <b style="text-align:right">${away}</b>
-   </div>
+<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch;margin:20px 0">
+ <div style="background:#0b2035;padding:12px 8px;border-radius:9px;text-align:center;display:flex;align-items:center;justify-content:center">
+  <b style="font-size:15px;overflow-wrap:anywhere">${home}</b>
+ </div>
+ <div style="display:flex;align-items:center;color:#19c7a0;font-weight:bold">VS</div>
+ <div style="background:#0b2035;padding:12px 8px;border-radius:9px;text-align:center;display:flex;align-items:center;justify-content:center">
+  <b style="font-size:15px;overflow-wrap:anywhere">${away}</b>
+ </div>
+</div>
 
    <div style="display:grid;gap:8px;margin:14px 0">
  <div style="background:#0b2035;padding:9px 11px;border-radius:8px">
