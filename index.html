@@ -98,7 +98,16 @@ footer{text-align:center;color:#8da0b8;padding:20px;font-size:12px}
 
 <button onclick="loadFixtures()">Refresh Fixtures</button>
   <div id="message"></div>
-  <div id="fixtures"></div>
+
+<label for="leagueFilter">Filter by League:</label>
+
+<select id="leagueFilter"
+ onchange="filterFixtures()"
+ style="width:100%;padding:12px;margin:10px 0;">
+ <option value="all">All Leagues</option>
+</select>
+
+<div id="fixtures"></div>
  </section>
 
  <section class="panel">
@@ -130,6 +139,7 @@ footer{text-align:center;color:#8da0b8;padding:20px;font-size:12px}
 const API = "https://promatch-predictor.onrender.com";
 
 let selectedMatch = null;
+let allFixtures = [];
 
 function localDate(offset = 0){
  const d = new Date();
@@ -178,7 +188,7 @@ const response = await fetch(
   message.textContent =
    data.count + " fixtures found.";
 
-  if(!data.matches || data.matches.length === 0){
+!data.matches || data.matches.length === 0){
    box.innerHTML = "<p>No fixtures found for this date.</p>";
    return;
   }
@@ -217,7 +227,54 @@ const response = await fetch(
    "Could not load fixtures: " + error.message;
  }
 }
+function filterFixtures(){
 
+ const box = document.getElementById("fixtures");
+ const filter = document.getElementById("leagueFilter").value;
+
+ box.innerHTML = "";
+
+ const filtered = filter === "all"
+  ? allFixtures
+  : allFixtures.filter(match =>
+     (match.league || "Football") === filter
+    );
+
+ if(filtered.length === 0){
+  box.innerHTML = "<p>No fixtures found for this league.</p>";
+  return;
+ }
+
+ filtered.forEach(match => {
+
+  const card = document.createElement("div");
+  card.className = "match";
+
+  const home = match.home_team || "Home";
+  const away = match.away_team || "Away";
+  const league = match.league || "Football";
+  const status = match.status || "";
+
+  card.innerHTML = `
+   <div class="muted">${league} | ${status}</div>
+   <div class="teams">${home} vs ${away}</div>
+   <div class="muted">${match.date || ""}</div>
+   <div class="muted">Score: ${
+    match.home_goals ?? "-"
+   } - ${
+    match.away_goals ?? "-"
+   }</div>
+   <br>
+   <button type="button">Analyse Match</button>
+  `;
+
+  card.querySelector("button").onclick = () => {
+   selectMatch(match);
+  };
+
+  box.appendChild(card);
+ });
+}
 function selectMatch(match){
  selectedMatch = match;
 
