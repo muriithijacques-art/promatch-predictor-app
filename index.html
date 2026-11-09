@@ -164,20 +164,21 @@ function changeDate(offset){
 async function loadFixtures(){
  const box = document.getElementById("fixtures");
  const message = document.getElementById("message");
+ const leagueFilter = document.getElementById("leagueFilter");
 
  box.innerHTML = "";
  message.textContent = "Loading fixtures...";
 
- try{
+ try {
   const chosenDate =
- document.getElementById("fixtureDate").value;
+   document.getElementById("fixtureDate").value;
 
-document.getElementById("today").textContent =
- "Fixtures for " + chosenDate;
+  document.getElementById("today").textContent =
+   "Fixtures for " + chosenDate;
 
-const response = await fetch(
- `${API}/fixtures?date=${chosenDate}`
-);
+  const response = await fetch(
+   `${API}/fixtures?date=${chosenDate}`
+  );
 
   const data = await response.json();
 
@@ -185,44 +186,34 @@ const response = await fetch(
    throw new Error(JSON.stringify(data.detail || data));
   }
 
-  message.textContent =
-   data.count + " fixtures found.";
+  allFixtures = data.matches || [];
 
-!data.matches || data.matches.length === 0){
-   box.innerHTML = "<p>No fixtures found for this date.</p>";
+  message.textContent =
+   allFixtures.length + " fixtures found.";
+
+  leagueFilter.innerHTML =
+   '<option value="all">All Leagues</option>';
+
+  const leagues = [...new Set(
+   allFixtures.map(match => match.league || "Football")
+  )].sort();
+
+  leagues.forEach(league => {
+   const option = document.createElement("option");
+   option.value = league;
+   option.textContent = league;
+   leagueFilter.appendChild(option);
+  });
+
+  if(allFixtures.length === 0){
+   box.innerHTML =
+    "<p>No fixtures found for this date.</p>";
    return;
   }
 
-  data.matches.forEach(match=>{
-   const card = document.createElement("div");
-   card.className = "match";
+  filterFixtures();
 
-   const home = match.home_team || "Home";
-   const away = match.away_team || "Away";
-   const league = match.league || "Football";
-   const status = match.status || "";
-
-   card.innerHTML = `
-    <div class="muted">${league} | ${status}</div>
-    <div class="teams">${home} vs ${away}</div>
-    <div class="muted">${match.date || ""}</div>
-    <div class="muted">Score: ${
-      match.home_goals ?? "-"
-    } - ${
-      match.away_goals ?? "-"
-    }</div>
-    <br>
-    <button type="button">Analyse Match</button>
-   `;
-
-   card.querySelector("button").onclick = ()=>{
-    selectMatch(match);
-   };
-
-   box.appendChild(card);
-  });
-
- }catch(error){
+ } catch(error) {
   message.textContent =
    "Could not load fixtures: " + error.message;
  }
