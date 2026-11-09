@@ -375,9 +375,9 @@ const timeText = kickoffDate && !isNaN(kickoffDate)
    match.home_goals != null &&
    match.away_goals != null;
 
-  const score = hasScore
-   ? match.home_goals + " - " + match.away_goals
-   : "Not available";
+const score = hasScore
+ ? match.home_goals + " - " + match.away_goals
+ : "Not started";
 
   card.innerHTML = `
    <div style="display:flex;justify-content:space-between;gap:8px">
@@ -405,8 +405,10 @@ const timeText = kickoffDate && !isNaN(kickoffDate)
   <b>${timeText}</b>
  </div>
 </div>
-   <p class="muted">Score: ${score}</p>
-
+<div style="background:#0b2035;padding:12px;border-radius:9px;text-align:center;margin:12px 0">
+ <div class="muted">FULL-TIME SCORE</div>
+ <b style="font-size:22px;color:#19c7a0">${score}</b>
+</div>
    <button type="button">Analyse Match</button>
   `;
 
