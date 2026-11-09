@@ -349,18 +349,38 @@ function filterFixtures(){
   const home = match.home_team || "Home";
   const away = match.away_team || "Away";
   const league = match.league || "Football";
-  const status = match.status || "";
+  const status = match.status || "SCHEDULED";
+
+  const kickoff = match.date
+   ? new Date(match.date).toLocaleString([], {
+      dateStyle:"medium",
+      timeStyle:"short"
+     })
+   : "Time unavailable";
+
+  const hasScore =
+   match.home_goals != null &&
+   match.away_goals != null;
+
+  const score = hasScore
+   ? match.home_goals + " - " + match.away_goals
+   : "Not available";
 
   card.innerHTML = `
-   <div class="muted">${league} | ${status}</div>
-   <div class="teams">${home} vs ${away}</div>
-   <div class="muted">${match.date || ""}</div>
-   <div class="muted">Score: ${
-    match.home_goals ?? "-"
-   } - ${
-    match.away_goals ?? "-"
-   }</div>
-   <br>
+   <div style="display:flex;justify-content:space-between;gap:8px">
+    <b>${league}</b>
+    <span style="color:#19c7a0">${status}</span>
+   </div>
+
+   <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin:20px 0">
+    <b>${home}</b>
+    <span style="color:#a9b8ca">VS</span>
+    <b style="text-align:right">${away}</b>
+   </div>
+
+   <p class="muted">Kick-off: ${kickoff}</p>
+   <p class="muted">Score: ${score}</p>
+
    <button type="button">Analyse Match</button>
   `;
 
