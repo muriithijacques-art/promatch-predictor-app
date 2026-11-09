@@ -192,20 +192,32 @@ async function loadFixtures(){
 function selectMatch(match){
  selectedMatch = match;
 
- document.getElementById("selected").innerHTML =
-  `<b>${match.home_team} vs ${match.away_team}</b>
-   <p class="muted">${match.league}</p>`;
+ const selected = document.getElementById("selected");
 
- document.getElementById("predictButton").disabled =
-  !match.league_id ||
-  !match.home_team_id ||
-  !match.away_team_id;
+ selected.textContent =
+  match.home_team + " vs " + match.away_team;
 
- document.getElementById("prediction").innerHTML = "";
+ const details = document.createElement("p");
+ details.textContent =
+  "League: " + match.league +
+  " | League ID: " + match.league_id;
 
- if(!match.league_id){
-  document.getElementById("selected").innerHTML +=
-   "<p class='muted'>League ID unavailable for this match.</p>";
+ selected.appendChild(details);
+
+ const button = document.getElementById("predictButton");
+
+ button.disabled = !(
+  match.league_id &&
+  match.home_team_id &&
+  match.away_team_id
+ );
+
+ document.getElementById("prediction").textContent = "";
+
+ if(button.disabled){
+  selected.appendChild(
+   document.createTextNode(" — Match IDs unavailable.")
+  );
  }
 }
 
