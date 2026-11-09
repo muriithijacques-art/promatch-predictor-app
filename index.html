@@ -351,12 +351,25 @@ function filterFixtures(){
   const league = match.league || "Football";
   const status = match.status || "SCHEDULED";
 
-  const kickoff = match.date
-   ? new Date(match.date).toLocaleString([], {
-      dateStyle:"medium",
-      timeStyle:"short"
-     })
-   : "Time unavailable";
+  const kickoffDate = match.date
+ ? new Date(match.date)
+ : null;
+
+const dateText = kickoffDate && !isNaN(kickoffDate)
+ ? kickoffDate.toLocaleDateString([], {
+    day:"numeric",
+    month:"long",
+    year:"numeric"
+   })
+ : "Unavailable";
+
+const timeText = kickoffDate && !isNaN(kickoffDate)
+ ? kickoffDate.toLocaleTimeString([], {
+    hour:"2-digit",
+    minute:"2-digit",
+    hour12:true
+   })
+ : "Unavailable";
 
   const hasScore =
    match.home_goals != null &&
@@ -378,7 +391,16 @@ function filterFixtures(){
     <b style="text-align:right">${away}</b>
    </div>
 
-   <p class="muted">Kick-off: ${kickoff}</p>
+   <div style="display:grid;gap:8px;margin:14px 0">
+ <div style="background:#0b2035;padding:9px 11px;border-radius:8px">
+  <div class="muted">DATE</div>
+  <b>${dateText}</b>
+ </div>
+ <div style="background:#0b2035;padding:9px 11px;border-radius:8px">
+  <div class="muted">KICK-OFF TIME</div>
+  <b>${timeText}</b>
+ </div>
+</div>
    <p class="muted">Score: ${score}</p>
 
    <button type="button">Analyse Match</button>
