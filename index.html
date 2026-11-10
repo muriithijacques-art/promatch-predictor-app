@@ -350,6 +350,20 @@ function filterFixtures(){
   const away = match.away_team || "Away";
   const league = match.league || "Football";
   const status = match.status || "SCHEDULED";
+  const liveStatuses = ["1H","2H","HT","ET","BT","P","LIVE"];
+const finishedStatuses = ["FT","AET","PEN","AWD","WO"];
+
+const statusLabel = finishedStatuses.includes(status)
+ ? "FINISHED"
+ : liveStatuses.includes(status)
+ ? "LIVE"
+ : "UPCOMING";
+
+const statusColor = statusLabel === "FINISHED"
+ ? "#19c7a0"
+ : statusLabel === "LIVE"
+ ? "#ff5252"
+ : "#55aaff";
 
   const kickoffDate = match.date
  ? new Date(match.date)
@@ -382,7 +396,7 @@ const score = hasScore
   card.innerHTML = `
    <div style="display:flex;justify-content:space-between;gap:8px">
     <b>${league}</b>
-    <span style="color:#19c7a0">${status}</span>
+    <span style="color:${statusColor};font-weight:bold">${statusLabel}</span>
    </div>
 
 <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch;margin:20px 0">
